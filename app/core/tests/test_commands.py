@@ -4,7 +4,7 @@ Tests for the custom management commands.
 
 from unittest.mock import patch
 
-from psycopg2 import OperationalError as Psycopg20pError # type: ignore
+from psycopg2 import OperationalError as Psycopg20pError  # type: ignore
 import django.core.management
 from django.db.utils import OperationalError
 from django.test import SimpleTestCase
@@ -12,7 +12,7 @@ from django.test import SimpleTestCase
 
 class CommandTests(SimpleTestCase):
     """Tests for the custom management commands."""
-    
+
     @patch('core.management.commands.wait_for_db.Command.check')
     def test_wait_for_db_ready(self, patched_check):
         """Test waiting for database when database is available."""
