@@ -111,7 +111,8 @@ class Recipe(models.Model):
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag', blank=True)
     ingredients = models.ManyToManyField('Ingredient', blank=True)
-    image = models.ImageField(null=True, blank=True, upload_to=recipe_image_file_path)
+    image = models.ImageField(null=True, blank=True,
+                              upload_to=recipe_image_file_path)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

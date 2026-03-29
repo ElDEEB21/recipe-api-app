@@ -66,6 +66,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
                             mixins.UpdateModelMixin,
@@ -84,7 +86,7 @@ class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
         if assigned_only.lower() in ('1', 'true'):
             queryset = queryset.filter(recipe__isnull=False)
 
-        return queryset.distinct()
+        return queryset.order_by('-name').distinct()
 
 
 class TagViewSet(BaseRecipeAttrViewSet):
