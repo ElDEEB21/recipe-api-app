@@ -1,13 +1,21 @@
+"""
+Django admin customization.
+"""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
+
 from core import models
 
 
+@admin.register(models.User)
 class UserAdmin(BaseUserAdmin):
     """Define the admin pages for users."""
+
     ordering = ['id']
-    list_display = ['email', 'name']
+    list_display = ['email', 'name', 'is_active', 'is_staff']
+    list_filter = ['is_active', 'is_staff', 'is_superuser']
+    search_fields = ['email', 'name']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {'fields': ('name',)}),
@@ -40,7 +48,30 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
-admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Recipe)
-admin.site.register(models.Tag)
-admin.site.register(models.Ingredient)
+@admin.register(models.Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    """Admin for Recipe model."""
+
+    list_display = ['title', 'user', 'time_minutes', 'price', 'created_at']
+    list_filter = ['created_at', 'tags']
+    search_fields = ['title', 'description']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    """Admin for Tag model."""
+
+    list_display = ['name', 'user']
+    search_fields = ['name']
+    ordering = ['name']
+
+
+@admin.register(models.Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    """Admin for Ingredient model."""
+
+    list_display = ['name', 'user']
+    search_fields = ['name']
+    ordering = ['name']

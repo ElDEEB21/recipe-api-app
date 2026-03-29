@@ -1,48 +1,55 @@
+"""
+Tests for the tags API.
+"""
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import (
-    Tag,
-    Recipe,
-)
-
+from core.models import Recipe, Tag
 from recipe.serializers import TagSerializer
-
 
 TAGS_URL = reverse('recipe:tag-list')
 
 
 def detail_url(tag_id):
+    """Create and return a tag detail url."""
     return reverse('recipe:tag-detail', args=[tag_id])
 
 
 def create_user(email='user@example.com', password='testpass123'):
+    """Create and return a user."""
     return get_user_model().objects.create_user(email=email, password=password)
 
 
 class PublicTagsApiTests(TestCase):
+    """Test unauthenticated API requests."""
 
     def setUp(self):
+        """Set up test client."""
         self.client = APIClient()
 
     def test_auth_required(self):
+        """Test auth is required for retrieving tags."""
         res = self.client.get(TAGS_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class PrivateTagsApiTests(TestCase):
+    """Test authenticated API requests."""
 
     def setUp(self):
+        """Set up authenticated client."""
         self.user = create_user()
         self.client = APIClient()
         self.client.force_authenticate(self.user)
 
     def test_retrieve_tags(self):
+        """Test retrieving a list of tags."""
         Tag.objects.create(user=self.user, name='Vegan')
         Tag.objects.create(user=self.user, name='Dessert')
 
@@ -54,6 +61,7 @@ class PrivateTagsApiTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_tags_limited_to_user(self):
+        """Test list of tags is limited to authenticated user."""
         user2 = create_user(email='user2@example.com')
         Tag.objects.create(user=user2, name='Fruity')
         tag = Tag.objects.create(user=self.user, name='Comfort Food')
@@ -78,6 +86,7 @@ class PrivateTagsApiTests(TestCase):
         self.assertEqual(tag.name, payload['name'])
 
     def test_delete_tag(self):
+        """Test deleting a tag."""
         tag = Tag.objects.create(user=self.user, name='Breakfast')
 
         url = detail_url(tag.id)
@@ -88,6 +97,7 @@ class PrivateTagsApiTests(TestCase):
         self.assertFalse(tags.exists())
 
     def test_filter_tags_assigned_to_recipes(self):
+        """Test listing tags to those assigned to recipes."""
         tag1 = Tag.objects.create(user=self.user, name='Breakfast')
         tag2 = Tag.objects.create(user=self.user, name='Lunch')
         recipe = Recipe.objects.create(
@@ -106,6 +116,7 @@ class PrivateTagsApiTests(TestCase):
         self.assertNotIn(s2.data, res.data)
 
     def test_filtered_tags_unique(self):
+        """Test filtered tags returns a unique list."""
         tag = Tag.objects.create(user=self.user, name='Breakfast')
         Tag.objects.create(user=self.user, name='Dinner')
         recipe1 = Recipe.objects.create(
